@@ -1,4 +1,4 @@
-from source_position import SourcePosition
+from lexer_folder.source_position import SourcePosition
 
 class LexerError(Exception):
     def __init__(self, message: str, position: SourcePosition):

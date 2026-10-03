@@ -1,5 +1,5 @@
-from token_type import TokenType
-from source_position import SourcePosition
+from lexer_folder.token_type import TokenType
+from lexer_folder.source_position import SourcePosition
 
 class Token:
     def __init__(self, token_type: TokenType, lexeme: str, literal, position: SourcePosition):

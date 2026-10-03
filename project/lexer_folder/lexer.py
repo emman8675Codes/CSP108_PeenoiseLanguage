@@ -1,7 +1,7 @@
-from source_position import SourcePosition
-from token_type import TokenType
-from lexer_error import LexerError
-from token import Token
+from lexer_folder.source_position import SourcePosition
+from lexer_folder.token_type import TokenType
+from lexer_folder.lexer_error import LexerError
+from lexer_folder.token import Token
 
 class Lexer:
     def __init__(self, source_code: str):

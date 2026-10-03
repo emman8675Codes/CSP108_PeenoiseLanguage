@@ -1,6 +1,7 @@
 from typing import Optional
-from project.lexer.lexer import TokenType, SourcePosition
-from project.parser.ast_nodes import (
+from lexer_folder.token_type import TokenType
+from lexer_folder.source_position import SourcePosition
+from parser_folder.ast_nodes import (
     ASTVisitor, ProgramNode, DeclarationNode, AssignmentNode, IfNode,
     PihitanNode, KasoNode, IpakitaNode, HintoNode, BlockNode,
     BinaryOpNode, UnaryOpNode, LiteralNode, VariableAccessNode

@@ -1,6 +1,6 @@
-from lexer.lexer import Lexer
-from parser.parser import Parser
-from project.semanticanalyzer.semantic_analyzer import SemanticAnalyzer
+from lexer_folder.lexer import Lexer
+from parser_folder.parser import Parser
+from semantic_analyzer_folder.semantic_analyzer import SemanticAnalyzer
 
 # Valid Code Test Case
 VALID_TEST_CASE = """

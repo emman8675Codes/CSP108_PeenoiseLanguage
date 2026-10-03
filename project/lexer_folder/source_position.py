@@ -1,4 +1,3 @@
-
 class SourcePosition:
     def __init__(self, line: int, column: int):
         self.__line = line

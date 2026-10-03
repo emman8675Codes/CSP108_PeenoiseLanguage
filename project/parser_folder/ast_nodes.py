@@ -1,5 +1,6 @@
 from typing import List, Optional, Any
-from project.lexer.lexer import Token, SourcePosition
+from lexer_folder.token import Token
+from lexer_folder.source_position import SourcePosition
 
 
 class ASTNode:
