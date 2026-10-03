@@ -3,8 +3,9 @@ from lexer_folder.token_type import TokenType
 from lexer_folder.lexer_error import LexerError
 from lexer_folder.token import Token
 
+
 class Lexer:
-    def __init__(self, source_code: str):
+    def __init__(self, source_code):
         self.__source = source_code
         self.__length = len(source_code)
         self.__tokens = []
@@ -15,26 +16,26 @@ class Lexer:
         self.__column = 1
         self.__token_start_column = 1
 
-    def __is_at_end(self) -> bool:
+    def __is_at_end(self):
         return self.__current >= self.__length
 
-    def __advance(self) -> str:
+    def __advance(self):
         char = self.__source[self.__current]
         self.__current += 1
         self.__column += 1
         return char
 
-    def __peek(self) -> str:
+    def __peek(self):
         if self.__is_at_end():
             return ''
         return self.__source[self.__current]
 
-    def __peek_next(self) -> str:
+    def __peek_next(self):
         if self.__current + 1 >= self.__length:
             return ''
         return self.__source[self.__current + 1]
 
-    def __match(self, expected: str) -> bool:
+    def __match(self, expected):
         if self.__is_at_end():
             return False
         if self.__source[self.__current] != expected:
@@ -43,22 +44,22 @@ class Lexer:
         self.__column += 1
         return True
 
-    def __get_current_position(self) -> SourcePosition:
+    def __get_current_position(self):
         return SourcePosition(self.__line, self.__token_start_column)
 
     @staticmethod
-    def __is_alpha(char: str) -> bool:
+    def __is_alpha(char):
         return ('a' <= char <= 'z') or ('A' <= char <= 'Z') or (char == '_')
 
     @staticmethod
-    def __is_digit(char: str) -> bool:
+    def __is_digit(char):
         return '0' <= char <= '9'
 
-    def __is_alpha_numeric(self, char: str) -> bool:
+    def __is_alpha_numeric(self, char):
         return self.__is_alpha(char) or self.__is_digit(char)
 
     @staticmethod
-    def __resolve_keyword(word: str) -> TokenType:
+    def __resolve_keyword(word):
         if word == "buong_numero":
             return TokenType.URI_BUONG_NUMERO
         elif word == "lutang_numero":
@@ -93,7 +94,7 @@ class Lexer:
             return TokenType.MALI
         return TokenType.TAGATUKOY
 
-    def __skip_block_comment(self, start_pos: SourcePosition):
+    def __skip_block_comment(self, start_pos):
         while not self.__is_at_end():
             if self.__peek() == '\n':
                 self.__line += 1
@@ -108,7 +109,7 @@ class Lexer:
 
         raise LexerError("Hindi naisarang block comment (/* ... */).", start_pos)
 
-    def __handle_string(self, position: SourcePosition) -> Token:
+    def __handle_string(self, position):
         literal_start = self.__current
         while self.__peek() != '"' and not self.__is_at_end():
             if self.__peek() == '\n':
@@ -120,11 +121,11 @@ class Lexer:
             raise LexerError("Hindi naisarang panipi para sa salita (Unterminated string).", position)
 
         literal_value = self.__source[literal_start:self.__current]
-        self.__advance()  # Skip closing quote '"'
+        self.__advance()
         lexeme = self.__source[self.__start:self.__current]
         return Token(TokenType.TITIK, lexeme, literal_value, position)
 
-    def __handle_character(self, position: SourcePosition) -> Token:
+    def __handle_character(self, position):
         if self.__is_at_end() or self.__peek() == "'":
             raise LexerError("Walang laman ang panipi ng karakter.", position)
 
@@ -132,18 +133,18 @@ class Lexer:
         if self.__peek() != "'":
             raise LexerError("Isang karakter lamang ang pinapayagan sa loob ng '' (Char literal).", position)
 
-        self.__advance()  # Skip closing quote "'"
+        self.__advance()
         lexeme = self.__source[self.__start:self.__current]
         return Token(TokenType.KARAKTER, lexeme, char_value, position)
 
-    def __handle_number(self, position: SourcePosition) -> Token:
+    def __handle_number(self, position):
         while self.__is_digit(self.__peek()):
             self.__advance()
 
         is_float = False
         if self.__peek() == '.' and self.__is_digit(self.__peek_next()):
             is_float = True
-            self.__advance()  # Consume '.'
+            self.__advance()
             while self.__is_digit(self.__peek()):
                 self.__advance()
 
@@ -151,7 +152,7 @@ class Lexer:
         literal_value = float(lexeme) if is_float else int(lexeme)
         return Token(TokenType.BILANG, lexeme, literal_value, position)
 
-    def __handle_identifier_or_keyword(self, position: SourcePosition) -> Token:
+    def __handle_identifier_or_keyword(self, position):
         while self.__is_alpha_numeric(self.__peek()):
             self.__advance()
 
@@ -173,7 +174,6 @@ class Lexer:
             char = self.__advance()
             position = self.__get_current_position()
 
-            # Whitespace handling
             if char in (' ', '\t', '\r'):
                 continue
             if char == '\n':
@@ -181,7 +181,6 @@ class Lexer:
                 self.__column = 1
                 continue
 
-            # Comments and Division operator
             if char == '#':
                 while self.__peek() != '\n' and not self.__is_at_end():
                     self.__advance()
@@ -199,7 +198,6 @@ class Lexer:
                     self.__tokens.append(Token(TokenType.HATI, "/", None, position))
                     continue
 
-            # Single-character delimiters and math
             if char == '+':
                 self.__tokens.append(Token(TokenType.DAGDAG, "+", None, position))
             elif char == '-':
@@ -223,7 +221,6 @@ class Lexer:
             elif char == ',':
                 self.__tokens.append(Token(TokenType.KUWIT, ",", None, position))
 
-            # Assignment and Relational operators
             elif char == '=':
                 if self.__match('='):
                     self.__tokens.append(Token(TokenType.PAREHO, "==", None, position))
@@ -248,7 +245,6 @@ class Lexer:
                 else:
                     self.__tokens.append(Token(TokenType.MABABA, "<", None, position))
 
-            # Java Logical operators
             elif char == '&':
                 if self.__match('&'):
                     self.__tokens.append(Token(TokenType.LOHIKAL_AT, "&&", None, position))
@@ -261,7 +257,6 @@ class Lexer:
                 else:
                     raise LexerError("Kulang ang simbolo. Inaasahan ang '||'.", position)
 
-            # Literals and Identifiers
             elif char == '"':
                 self.__tokens.append(self.__handle_string(position))
             elif char == "'":
@@ -274,8 +269,6 @@ class Lexer:
             else:
                 raise LexerError(f"Di-kilalang simbolo '{char}'.", position)
 
-        # Append End-Of-File sentinel
         end_position = SourcePosition(self.__line, self.__column)
         self.__tokens.append(Token(TokenType.DULO, "", None, end_position))
         return self.__tokens
-

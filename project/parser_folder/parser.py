@@ -1,4 +1,3 @@
-from typing import List
 from lexer_folder.token import Token
 from lexer_folder.token_type import TokenType
 from lexer_folder.source_position import SourcePosition
@@ -10,49 +9,49 @@ from parser_folder.ast_nodes import (
 
 
 class ParserError(Exception):
-    def __init__(self, message: str, position: SourcePosition):
+    def __init__(self, message, position):
         self.position = position
         self.message = message
         super().__init__(f"Maling Grammar sa {self.position}: {self.message}")
 
 
 class Parser:
-    def __init__(self, tokens: List[Token]):
+    def __init__(self, tokens):
         self.__tokens = tokens
         self.__current = 0
 
-    def __is_at_end(self) -> bool:
+    def __is_at_end(self):
         return self.__peek().token_type == TokenType.DULO
 
-    def __peek(self) -> Token:
+    def __peek(self):
         return self.__tokens[self.__current]
 
-    def __previous(self) -> Token:
+    def __previous(self):
         return self.__tokens[self.__current - 1]
 
-    def __advance(self) -> Token:
+    def __advance(self):
         if not self.__is_at_end():
             self.__current += 1
         return self.__previous()
 
-    def __check(self, token_type: TokenType) -> bool:
+    def __check(self, token_type):
         if self.__is_at_end():
             return False
         return self.__peek().token_type == token_type
 
-    def __match(self, *types: TokenType) -> bool:
+    def __match(self, *types):
         for t in types:
             if self.__check(t):
                 self.__advance()
                 return True
         return False
 
-    def __consume(self, token_type: TokenType, error_message: str) -> Token:
+    def __consume(self, token_type, error_message):
         if self.__check(token_type):
             return self.__advance()
         raise ParserError(error_message, self.__peek().position)
 
-    def parse(self) -> ProgramNode:
+    def parse(self):
         statements = []
         start_pos = self.__peek().position if self.__tokens else SourcePosition(1, 1)
 
@@ -63,7 +62,7 @@ class Parser:
 
         return ProgramNode(statements, start_pos)
 
-    def __declaration_or_statement(self) -> ASTNode:
+    def __declaration_or_statement(self):
         if self.__match(
             TokenType.URI_BUONG_NUMERO,
             TokenType.URI_LUTANG_NUMERO,
@@ -75,7 +74,7 @@ class Parser:
 
         return self.__statement()
 
-    def __var_declaration(self) -> DeclarationNode:
+    def __var_declaration(self):
         type_tok = self.__previous()
         var_name = self.__consume(TokenType.TAGATUKOY, "Inaasahan ang pangalan ng baryabol.")
 
@@ -86,7 +85,7 @@ class Parser:
         self.__consume(TokenType.TULDOK_KUWIT, "Inaasahan ang ';' sa dulo ng deklarasyon.")
         return DeclarationNode(type_tok, var_name, initializer, type_tok.position)
 
-    def __statement(self) -> ASTNode:
+    def __statement(self):
         if self.__match(TokenType.ITAKDA):
             return self.__var_assignment()
         if self.__match(TokenType.KUNG):
@@ -111,19 +110,19 @@ class Parser:
 
         raise ParserError(f"Di-kilalang pahayag o utos '{self.__peek().lexeme}'.", self.__peek().position)
 
-    def __peek_next_is(self, token_type: TokenType) -> bool:
+    def __peek_next_is(self, token_type):
         if self.__current + 1 >= len(self.__tokens):
             return False
         return self.__tokens[self.__current + 1].token_type == token_type
 
-    def __var_assignment(self) -> AssignmentNode:
+    def __var_assignment(self):
         var_name = self.__consume(TokenType.TAGATUKOY, "Inaasahan ang pangalan ng baryabol pagkatapos ng 'itakda'.")
         self.__consume(TokenType.PAGTATAKDA, "Inaasahan ang '=' sa pagtatakda ng halaga.")
         val = self.__expression()
         self.__consume(TokenType.TULDOK_KUWIT, "Inaasahan ang ';' sa dulo ng pagtatakda.")
         return AssignmentNode(var_name, val, var_name.position)
 
-    def __if_statement(self) -> IfNode:
+    def __if_statement(self):
         pos = self.__previous().position
         self.__consume(TokenType.KALIWANG_PANIPI, "Inaasahan ang '(' pagkatapos ng 'kung'.")
         condition = self.__expression()
@@ -145,7 +144,7 @@ class Parser:
 
         return IfNode(condition, then_branch, else_ifs, else_branch, pos)
 
-    def __pihitan_statement(self) -> PihitanNode:
+    def __pihitan_statement(self):
         pos = self.__previous().position
         self.__consume(TokenType.KALIWANG_PANIPI, "Inaasahan ang '(' pagkatapos ng 'pihitan'.")
         expr = self.__expression()
@@ -177,7 +176,7 @@ class Parser:
         self.__consume(TokenType.KANANG_KUKO, "Inaasahan ang '}' para isara ang pihitan.")
         return PihitanNode(expr, cases, default_branch, pos)
 
-    def __ipakita_statement(self) -> IpakitaNode:
+    def __ipakita_statement(self):
         pos = self.__previous().position
         self.__consume(TokenType.KALIWANG_PANIPI, "Inaasahan ang '(' pagkatapos ng 'ipakita'.")
         expr = self.__expression()
@@ -185,7 +184,7 @@ class Parser:
         self.__consume(TokenType.TULDOK_KUWIT, "Inaasahan ang ';' sa dulo ng ipakita.")
         return IpakitaNode(expr, pos)
 
-    def __block_statement(self) -> BlockNode:
+    def __block_statement(self):
         pos = self.__previous().position
         statements = []
         while not self.__check(TokenType.KANANG_KUKO) and not self.__is_at_end():
@@ -193,10 +192,10 @@ class Parser:
         self.__consume(TokenType.KANANG_KUKO, "Inaasahan ang '}' sa dulo ng bloke.")
         return BlockNode(statements, pos)
 
-    def __expression(self) -> ASTNode:
+    def __expression(self):
         return self.__logical_or()
 
-    def __logical_or(self) -> ASTNode:
+    def __logical_or(self):
         expr = self.__logical_and()
         while self.__match(TokenType.LOHIKAL_O):
             op = self.__previous()
@@ -204,7 +203,7 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __logical_and(self) -> ASTNode:
+    def __logical_and(self):
         expr = self.__equality()
         while self.__match(TokenType.LOHIKAL_AT):
             op = self.__previous()
@@ -212,7 +211,7 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __equality(self) -> ASTNode:
+    def __equality(self):
         expr = self.__relational()
         while self.__match(TokenType.PAREHO, TokenType.DI_PAREHO):
             op = self.__previous()
@@ -220,7 +219,7 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __relational(self) -> ASTNode:
+    def __relational(self):
         expr = self.__additive()
         while self.__match(TokenType.HIGIT, TokenType.MABABA, TokenType.HIGIT_O_PAREHO, TokenType.MABABA_O_PAREHO):
             op = self.__previous()
@@ -228,7 +227,7 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __additive(self) -> ASTNode:
+    def __additive(self):
         expr = self.__multiplicative()
         while self.__match(TokenType.DAGDAG, TokenType.BAWAS):
             op = self.__previous()
@@ -236,7 +235,7 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __multiplicative(self) -> ASTNode:
+    def __multiplicative(self):
         expr = self.__unary()
         while self.__match(TokenType.PARAMI, TokenType.HATI, TokenType.LABIS):
             op = self.__previous()
@@ -244,14 +243,14 @@ class Parser:
             expr = BinaryOpNode(expr, op, right, op.position)
         return expr
 
-    def __unary(self) -> ASTNode:
+    def __unary(self):
         if self.__match(TokenType.LOHIKAL_HINDI, TokenType.BAWAS):
             op = self.__previous()
             right = self.__unary()
             return UnaryOpNode(op, right, op.position)
         return self.__primary()
 
-    def __primary(self) -> ASTNode:
+    def __primary(self):
         if self.__match(TokenType.BILANG):
             tok = self.__previous()
             t_name = "lutang_numero" if isinstance(tok.literal, float) else "buong_numero"

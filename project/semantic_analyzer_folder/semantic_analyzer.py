@@ -1,4 +1,3 @@
-from typing import Optional
 from lexer_folder.token_type import TokenType
 from lexer_folder.source_position import SourcePosition
 from parser_folder.ast_nodes import (
@@ -9,23 +8,23 @@ from parser_folder.ast_nodes import (
 
 
 class SemanticError(Exception):
-    def __init__(self, message: str, position: SourcePosition):
+    def __init__(self, message, position):
         self.position = position
         self.message = message
         super().__init__(f"Maling Semantika sa {self.position}: {self.message}")
 
 
 class SymbolEnvironment:
-    def __init__(self, enclosing: Optional['SymbolEnvironment'] = None):
+    def __init__(self, enclosing=None):
         self.__symbols = {}
         self.__enclosing = enclosing
 
-    def define(self, name: str, type_name: str, pos: SourcePosition):
+    def define(self, name, type_name, pos):
         if name in self.__symbols:
             raise SemanticError(f"Ang baryabol na '{name}' ay naideklara na sa sakop na ito.", pos)
         self.__symbols[name] = type_name
 
-    def lookup(self, name: str) -> Optional[str]:
+    def lookup(self, name):
         if name in self.__symbols:
             return self.__symbols[name]
         if self.__enclosing:
@@ -37,10 +36,10 @@ class SemanticAnalyzer(ASTVisitor):
     def __init__(self):
         self.__current_env = SymbolEnvironment()
 
-    def analyze(self, program: ProgramNode):
+    def analyze(self, program):
         program.accept(self)
 
-    def __map_token_type(self, token_type: TokenType) -> str:
+    def __map_token_type(self, token_type):
         if token_type == TokenType.URI_BUONG_NUMERO: return "buong_numero"
         if token_type == TokenType.URI_LUTANG_NUMERO: return "lutang_numero"
         if token_type == TokenType.URI_SALITA: return "salita"
@@ -48,18 +47,18 @@ class SemanticAnalyzer(ASTVisitor):
         if token_type == TokenType.URI_KATOTOHANAN: return "katotohanan"
         return "di_kilala"
 
-    def __are_types_compatible(self, target: str, source: str) -> bool:
+    def __are_types_compatible(self, target, source):
         if target == source:
             return True
         if target == "lutang_numero" and source == "buong_numero":
             return True
         return False
 
-    def visit_program(self, node: ProgramNode):
+    def visit_program(self, node):
         for stmt in node.statements:
             stmt.accept(self)
 
-    def visit_declaration(self, node: DeclarationNode):
+    def visit_declaration(self, node):
         target_type = self.__map_token_type(node.type_token.token_type)
         var_name = node.var_name.lexeme
 
@@ -73,7 +72,7 @@ class SemanticAnalyzer(ASTVisitor):
 
         self.__current_env.define(var_name, target_type, node.position)
 
-    def visit_assignment(self, node: AssignmentNode):
+    def visit_assignment(self, node):
         var_name = node.var_name.lexeme
         target_type = self.__current_env.lookup(var_name)
 
@@ -87,7 +86,7 @@ class SemanticAnalyzer(ASTVisitor):
                 node.position
             )
 
-    def visit_if(self, node: IfNode):
+    def visit_if(self, node):
         cond_type = node.condition.accept(self)
         if cond_type != "katotohanan":
             raise SemanticError("Ang kondisyon sa 'kung' ay dapat na uri ng katotohanan (boolean).", node.position)
@@ -102,7 +101,7 @@ class SemanticAnalyzer(ASTVisitor):
         if node.else_branch:
             node.else_branch.accept(self)
 
-    def visit_pihitan(self, node: PihitanNode):
+    def visit_pihitan(self, node):
         expr_type = node.expr.accept(self)
 
         for case in node.cases:
@@ -118,17 +117,17 @@ class SemanticAnalyzer(ASTVisitor):
             for stmt in node.default_branch:
                 stmt.accept(self)
 
-    def visit_kaso(self, node: KasoNode):
+    def visit_kaso(self, node):
         for stmt in node.body:
             stmt.accept(self)
 
-    def visit_ipakita(self, node: IpakitaNode):
+    def visit_ipakita(self, node):
         node.expression.accept(self)
 
-    def visit_hinto(self, node: HintoNode):
+    def visit_hinto(self, node):
         pass
 
-    def visit_block(self, node: BlockNode):
+    def visit_block(self, node):
         previous_env = self.__current_env
         self.__current_env = SymbolEnvironment(enclosing=previous_env)
         try:
@@ -137,7 +136,7 @@ class SemanticAnalyzer(ASTVisitor):
         finally:
             self.__current_env = previous_env
 
-    def visit_binary_op(self, node: BinaryOpNode) -> str:
+    def visit_binary_op(self, node):
         left_t = node.left.accept(self)
         right_t = node.right.accept(self)
         op_t = node.operator.token_type
@@ -166,7 +165,7 @@ class SemanticAnalyzer(ASTVisitor):
 
         return "di_kilala"
 
-    def visit_unary_op(self, node: UnaryOpNode) -> str:
+    def visit_unary_op(self, node):
         right_t = node.right.accept(self)
         op_t = node.operator.token_type
 
@@ -182,10 +181,10 @@ class SemanticAnalyzer(ASTVisitor):
 
         return "di_kilala"
 
-    def visit_literal(self, node: LiteralNode) -> str:
+    def visit_literal(self, node):
         return node.type_name
 
-    def visit_variable_access(self, node: VariableAccessNode) -> str:
+    def visit_variable_access(self, node):
         var_name = node.var_token.lexeme
         var_type = self.__current_env.lookup(var_name)
         if not var_type:
