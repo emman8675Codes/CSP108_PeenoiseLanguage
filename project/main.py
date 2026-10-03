@@ -33,8 +33,7 @@ pihitan (edad) {
 """
 
 INVALID_TEST_CASE = """
-buong_numero bilang = 1;
-ipakita(bilang);
+buong_numero bilang = "Hindi Numero";
 """
 
 def run_code(code):
