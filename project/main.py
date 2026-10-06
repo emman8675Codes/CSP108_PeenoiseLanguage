@@ -59,8 +59,13 @@ def run_code(code):
 
 
 if __name__ == "__main__":
-    print("=== TEST 1 ===")
-    run_code(VALID_TEST_CASE)
+    import sys
+    if "--gui" in sys.argv or "-g" in sys.argv:
+        from gui_folder.app import main as launch_gui
+        launch_gui()
+    else:
+        print("=== TEST 1 ===")
+        run_code(VALID_TEST_CASE)
 
-    print("\n=== TEST 2 ===")
-    run_code(INVALID_TEST_CASE)
+        print("\n=== TEST 2 ===")
+        run_code(INVALID_TEST_CASE)
