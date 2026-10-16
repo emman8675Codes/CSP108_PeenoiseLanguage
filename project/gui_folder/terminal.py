@@ -52,8 +52,8 @@ class Terminal(ctk.CTkFrame):
             self.header_frame,
             text="⚪ Handa",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11, weight="bold"),
-            fg_color="#1E293B",
-            text_color="#94A3B8",
+            fg_color=("#E2E8F0", "#1E293B"),
+            text_color=("#475569", "#94A3B8"),
             corner_radius=6,
             padx=8,
             pady=2
@@ -164,17 +164,22 @@ class Terminal(ctk.CTkFrame):
         )
         self.vars_text.pack(fill="both", expand=True, padx=2, pady=2)
 
-    def _setup_console_tags(self):
+    def _setup_console_tags(self, mode: Optional[str] = None):
         """Sets up colored tags for the console output."""
+        current_mode = mode or ctk.get_appearance_mode()
         inner = self.console_text._textbox
-        inner.tag_configure("success_banner", foreground=Theme.SUCCESS_GREEN, font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
-        inner.tag_configure("error_badge", foreground="#FFFFFF", background="#991B1B", font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
-        inner.tag_configure("error_msg", foreground="#F87171", font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
-        inner.tag_configure("error_loc", foreground="#FCD34D", font=(Theme.FONT_FAMILY_CODE, self._font_size))
-        inner.tag_configure("error_snippet", foreground="#E2E8F0", font=(Theme.FONT_FAMILY_CODE, self._font_size))
-        inner.tag_configure("info_text", foreground=Theme.INFO_CYAN, font=(Theme.FONT_FAMILY_CODE, self._font_size))
-        inner.tag_configure("normal_output", foreground="#F1F5F9", font=(Theme.FONT_FAMILY_CODE, self._font_size))
-        inner.tag_configure("dim_text", foreground=Theme.TEXT_MUTED, font=(Theme.FONT_FAMILY_CODE, self._font_size))
+        inner.tag_configure("success_banner", foreground=Theme.get_color(Theme.SUCCESS_GREEN, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
+        inner.tag_configure("error_badge", foreground="#FFFFFF", background="#DC2626" if current_mode.lower() == "light" else "#991B1B", font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
+        inner.tag_configure("error_msg", foreground=Theme.get_color(Theme.ERROR_RED, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size, "bold"))
+        inner.tag_configure("error_loc", foreground=Theme.get_color(Theme.WARNING_AMBER, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size))
+        inner.tag_configure("error_snippet", foreground=Theme.get_color(Theme.TEXT_PRIMARY, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size))
+        inner.tag_configure("info_text", foreground=Theme.get_color(Theme.INFO_CYAN, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size))
+        inner.tag_configure("normal_output", foreground=Theme.get_color(Theme.TERMINAL_FG, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size))
+        inner.tag_configure("dim_text", foreground=Theme.get_color(Theme.TEXT_MUTED, current_mode), font=(Theme.FONT_FAMILY_CODE, self._font_size))
+
+    def update_theme(self, mode: Optional[str] = None):
+        """Updates internal tk text tags when theme changes."""
+        self._setup_console_tags(mode)
 
     # ---------------- Display Methods ----------------
 
@@ -182,8 +187,8 @@ class Terminal(ctk.CTkFrame):
         """Displays running state."""
         self.status_badge.configure(
             text="🟡 Tumatakbo...",
-            fg_color="#78350F",
-            text_color="#FDE68A"
+            fg_color=("#FEF3C7", "#78350F"),
+            text_color=("#92400E", "#FDE68A")
         )
         self.time_label.configure(text="")
 
@@ -191,8 +196,8 @@ class Terminal(ctk.CTkFrame):
         """Displays ready state."""
         self.status_badge.configure(
             text="⚪ Handa",
-            fg_color="#1E293B",
-            text_color="#94A3B8"
+            fg_color=("#E2E8F0", "#1E293B"),
+            text_color=("#475569", "#94A3B8")
         )
         self.time_label.configure(text="")
 
@@ -202,16 +207,16 @@ class Terminal(ctk.CTkFrame):
         if result.success:
             self.status_badge.configure(
                 text="🟢 Tagumpay",
-                fg_color="#064E3B",
-                text_color="#A7F3D0"
+                fg_color=("#DCFCE7", "#064E3B"),
+                text_color=("#166534", "#A7F3D0")
             )
             self.time_label.configure(text=f"Oras: {result.execution_time_ms:.2f} ms")
         else:
             loc_str = f"L{result.error_line}:K{result.error_column}" if result.error_line else ""
             self.status_badge.configure(
                 text=f"🔴 May Error {loc_str}".strip(),
-                fg_color="#7F1D1D",
-                text_color="#FECACA"
+                fg_color=("#FEE2E2", "#7F1D1D"),
+                text_color=("#991B1B", "#FECACA")
             )
             self.time_label.configure(text=f"Oras: {result.execution_time_ms:.2f} ms")
 

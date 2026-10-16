@@ -4,6 +4,7 @@ Allows the user to drag the dividing separator to dynamically resize
 the Code Editor panel (left) and the Terminal panel (right).
 """
 
+from typing import Optional
 import tkinter as tk
 import customtkinter as ctk
 
@@ -34,7 +35,7 @@ class ResizableSplitView(ctk.CTkFrame):
         self.splitter = tk.Frame(
             self,
             width=8,
-            bg=Theme.BG_MAIN,
+            bg=Theme.get_color(Theme.BG_MAIN),
             cursor="sb_h_double_arrow"
         )
         self.splitter.pack(side="left", fill="y", padx=1)
@@ -43,7 +44,7 @@ class ResizableSplitView(ctk.CTkFrame):
         self.splitter_line = tk.Frame(
             self.splitter,
             width=2,
-            bg=Theme.BORDER_COLOR
+            bg=Theme.get_color(Theme.BORDER_COLOR)
         )
         self.splitter_line.place(relx=0.5, rely=0.2, relheight=0.6, anchor="n")
 
@@ -71,17 +72,17 @@ class ResizableSplitView(ctk.CTkFrame):
 
     def _on_hover_enter(self, event):
         if not self._is_dragging:
-            self.splitter_line.configure(bg=Theme.BTN_RUN_BG)
+            self.splitter_line.configure(bg=Theme.get_color(Theme.BTN_RUN_BG))
 
     def _on_hover_leave(self, event):
         if not self._is_dragging:
-            self.splitter_line.configure(bg=Theme.BORDER_COLOR)
+            self.splitter_line.configure(bg=Theme.get_color(Theme.BORDER_COLOR))
 
     def _on_drag_start(self, event):
         self._is_dragging = True
         self._start_x = event.x_root
         self._start_width = self.left_pane.winfo_width()
-        self.splitter_line.configure(bg=Theme.BTN_RUN_BG)
+        self.splitter_line.configure(bg=Theme.get_color(Theme.BTN_RUN_BG))
 
     def _on_dragging(self, event):
         if not self._is_dragging:
@@ -96,4 +97,10 @@ class ResizableSplitView(ctk.CTkFrame):
 
     def _on_drag_end(self, event):
         self._is_dragging = False
-        self.splitter_line.configure(bg=Theme.BORDER_COLOR)
+        self.splitter_line.configure(bg=Theme.get_color(Theme.BORDER_COLOR))
+
+    def update_theme(self, mode: Optional[str] = None):
+        """Updates standard Tkinter splitter elements when appearance mode changes."""
+        current_mode = mode or ctk.get_appearance_mode()
+        self.splitter.configure(bg=Theme.get_color(Theme.BG_MAIN, current_mode))
+        self.splitter_line.configure(bg=Theme.get_color(Theme.BORDER_COLOR, current_mode))

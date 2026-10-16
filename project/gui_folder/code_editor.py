@@ -63,8 +63,8 @@ class CodeEditor(ctk.CTkFrame):
             self.header_frame,
             text="🇵🇭 Peenoise Script",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11),
-            fg_color="#1E293B",
-            text_color="#38BDF8",
+            fg_color=("#E2E8F0", "#1E293B"),
+            text_color=Theme.INFO_CYAN,
             corner_radius=6,
             padx=8,
             pady=2
@@ -138,8 +138,8 @@ class CodeEditor(ctk.CTkFrame):
         self.gutter = tk.Text(
             self.editor_container,
             width=4,
-            bg=Theme.GUTTER_BG,
-            fg=Theme.GUTTER_FG,
+            bg=Theme.get_color(Theme.GUTTER_BG),
+            fg=Theme.get_color(Theme.GUTTER_FG),
             font=(Theme.FONT_FAMILY_CODE, self._font_size),
             bd=0,
             highlightthickness=0,
@@ -172,8 +172,8 @@ class CodeEditor(ctk.CTkFrame):
         inner_tk.configure(
             spacing1=1,
             spacing3=1,
-            insertbackground=Theme.EDITOR_INSERT,
-            selectbackground=Theme.EDITOR_SELECT_BG,
+            insertbackground=Theme.get_color(Theme.EDITOR_INSERT),
+            selectbackground=Theme.get_color(Theme.EDITOR_SELECT_BG),
             selectforeground="#FFFFFF",
             padx=8,
             pady=6
@@ -193,21 +193,39 @@ class CodeEditor(ctk.CTkFrame):
             return "break"
         self.gutter.bind("<MouseWheel>", _on_gutter_mousewheel)
 
-    def _setup_syntax_tags(self):
+    def _setup_syntax_tags(self, mode: Optional[str] = None):
         """Configures color tags for Peenoise language syntax highlighting."""
+        current_mode = mode or ctk.get_appearance_mode()
         tk_text = self.textbox._textbox
         code_font = (Theme.FONT_FAMILY_CODE, self._font_size)
         bold_font = (Theme.FONT_FAMILY_CODE, self._font_size, "bold")
         italic_font = (Theme.FONT_FAMILY_CODE, self._font_size, "italic")
 
-        tk_text.tag_configure("kw_type", foreground=Theme.SYNTAX_TYPE, font=bold_font)
-        tk_text.tag_configure("kw_stmt", foreground=Theme.SYNTAX_KEYWORD, font=bold_font)
-        tk_text.tag_configure("kw_bool", foreground=Theme.SYNTAX_BOOLEAN, font=bold_font)
-        tk_text.tag_configure("lit_str", foreground=Theme.SYNTAX_STRING, font=code_font)
-        tk_text.tag_configure("lit_num", foreground=Theme.SYNTAX_NUMBER, font=code_font)
-        tk_text.tag_configure("comment", foreground=Theme.SYNTAX_COMMENT, font=italic_font)
-        tk_text.tag_configure("operator", foreground=Theme.SYNTAX_OPERATOR, font=code_font)
-        tk_text.tag_configure("error_line", background=Theme.ERROR_LINE_BG)
+        tk_text.tag_configure("kw_type", foreground=Theme.get_color(Theme.SYNTAX_TYPE, current_mode), font=bold_font)
+        tk_text.tag_configure("kw_stmt", foreground=Theme.get_color(Theme.SYNTAX_KEYWORD, current_mode), font=bold_font)
+        tk_text.tag_configure("kw_bool", foreground=Theme.get_color(Theme.SYNTAX_BOOLEAN, current_mode), font=bold_font)
+        tk_text.tag_configure("lit_str", foreground=Theme.get_color(Theme.SYNTAX_STRING, current_mode), font=code_font)
+        tk_text.tag_configure("lit_num", foreground=Theme.get_color(Theme.SYNTAX_NUMBER, current_mode), font=code_font)
+        tk_text.tag_configure("comment", foreground=Theme.get_color(Theme.SYNTAX_COMMENT, current_mode), font=italic_font)
+        tk_text.tag_configure("operator", foreground=Theme.get_color(Theme.SYNTAX_OPERATOR, current_mode), font=code_font)
+        tk_text.tag_configure("error_line", background=Theme.get_color(Theme.ERROR_LINE_BG, current_mode))
+
+    def update_theme(self, mode: Optional[str] = None):
+        """Updates native Tkinter gutter, insert cursor, and syntax highlight tags."""
+        current_mode = mode or ctk.get_appearance_mode()
+        self.gutter.configure(
+            bg=Theme.get_color(Theme.GUTTER_BG, current_mode),
+            fg=Theme.get_color(Theme.GUTTER_FG, current_mode)
+        )
+        inner_tk = self.textbox._textbox
+        inner_tk.configure(
+            insertbackground=Theme.get_color(Theme.EDITOR_INSERT, current_mode),
+            selectbackground=Theme.get_color(Theme.EDITOR_SELECT_BG, current_mode)
+        )
+        self._setup_syntax_tags(current_mode)
+        if self._error_line is not None:
+            self.highlight_error_line(self._error_line)
+        self._schedule_highlight()
 
     def _bind_events(self):
         """Binds typing, keyboard shortcuts, and cursor navigation."""

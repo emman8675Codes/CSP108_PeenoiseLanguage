@@ -64,7 +64,8 @@ class PeenoiseApp(ctk.CTk):
             on_reset=self.reset_code,
             on_load_sample=self.load_sample,
             on_clear_terminal=self.clear_terminal,
-            on_zoom_change=self.change_font_size
+            on_zoom_change=self.change_font_size,
+            on_theme_change=self.change_theme
         )
         self.sidebar.pack(side="left", fill="y")
 
@@ -103,7 +104,7 @@ class PeenoiseApp(ctk.CTk):
             self.status_bar,
             text="● Handa na magpatakbo ng kodigo",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11),
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
         self.status_lbl.pack(side="left", padx=12)
 
@@ -175,7 +176,7 @@ class PeenoiseApp(ctk.CTk):
         # Update UI to running state
         self.editor.clear_error_highlight()
         self.terminal.set_running_status()
-        self.status_lbl.configure(text="● Tumatakbo ang compiler...", text_color="#FBBF24")
+        self.status_lbl.configure(text="● Tumatakbo ang compiler...", text_color=Theme.WARNING_AMBER)
         self.update_idletasks()
 
         # Execute compiler runner
@@ -216,7 +217,7 @@ class PeenoiseApp(ctk.CTk):
         self.editor.insert_snippet(snippet)
         self.status_lbl.configure(
             text="✔ Naipasok ang sintaks sa editor.",
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
         self.lift()
 
@@ -227,7 +228,7 @@ class PeenoiseApp(ctk.CTk):
         self.terminal.clear_all()
         self.status_lbl.configure(
             text="● Naibalik ang editor sa batayang halimbawa.",
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
 
     def load_sample(self, sample_code: str):
@@ -236,7 +237,7 @@ class PeenoiseApp(ctk.CTk):
         self.terminal.clear_all()
         self.status_lbl.configure(
             text="● Na-load ang halimbawang programa.",
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
 
     def clear_terminal(self):
@@ -244,8 +245,17 @@ class PeenoiseApp(ctk.CTk):
         self.terminal.clear_all()
         self.status_lbl.configure(
             text="● Nalinisan ang terminal.",
-            text_color="#94A3B8"
+            text_color=Theme.TEXT_MUTED
         )
+
+    def change_theme(self, mode: str):
+        """Propagates theme change to subcomponents with native Tk elements."""
+        current_mode = ctk.get_appearance_mode()
+        self.editor.update_theme(current_mode)
+        self.terminal.update_theme(current_mode)
+        self.split_view.update_theme(current_mode)
+        if self._dictionary_window is not None and self._dictionary_window.winfo_exists():
+            self._dictionary_window.update_theme(current_mode)
 
     def change_font_size(self, size: int):
         """Scales font sizes in both editor and terminal."""

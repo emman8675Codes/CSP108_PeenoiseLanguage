@@ -121,6 +121,10 @@ class DictionaryWindow(ctk.CTkToplevel):
                 btn.configure(fg_color=Theme.BG_CARD, text_color=Theme.TEXT_SECONDARY)
         self._render_entries()
 
+    def update_theme(self, mode: Optional[str] = None):
+        """Refreshes dictionary cards and category filters on theme switch."""
+        self._set_category(self._active_category)
+
     def _on_search_change(self, event=None):
         """Filters entries based on user search term."""
         self._search_query = self.search_entry.get().strip().lower()
@@ -188,7 +192,7 @@ class DictionaryWindow(ctk.CTkToplevel):
             head_row,
             text=entry.name,
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_CODE, size=15, weight="bold"),
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
         name_lbl.pack(side="left")
 
@@ -197,8 +201,8 @@ class DictionaryWindow(ctk.CTkToplevel):
             head_row,
             text=f"Eng: {entry.english_equiv}",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11),
-            fg_color="#1E293B",
-            text_color="#94A3B8",
+            fg_color=("#E2E8F0", "#1E293B"),
+            text_color=("#475569", "#94A3B8"),
             corner_radius=6,
             padx=8,
             pady=2
@@ -210,8 +214,8 @@ class DictionaryWindow(ctk.CTkToplevel):
             head_row,
             text=entry.category,
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11, weight="bold"),
-            fg_color="#312E81",
-            text_color="#C7D2FE",
+            fg_color=("#E0E7FF", "#312E81"),
+            text_color=("#4338CA", "#C7D2FE"),
             corner_radius=6,
             padx=8,
             pady=2
@@ -226,7 +230,7 @@ class DictionaryWindow(ctk.CTkToplevel):
             syntax_box,
             text=f"Sintaks: {entry.syntax}",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_CODE, size=12),
-            text_color="#F1F5F9",
+            text_color=Theme.TEXT_PRIMARY,
             anchor="w"
         )
         syntax_lbl.pack(fill="x", padx=10, pady=6)
@@ -244,14 +248,14 @@ class DictionaryWindow(ctk.CTkToplevel):
         desc_lbl.pack(fill="x", padx=14, pady=4)
 
         # Example Code Box
-        ex_container = ctk.CTkFrame(card, fg_color="#0F172A", corner_radius=6)
+        ex_container = ctk.CTkFrame(card, fg_color=("#F1F5F9", "#0F172A"), corner_radius=6)
         ex_container.pack(fill="x", padx=14, pady=6)
 
         ex_lbl = ctk.CTkLabel(
             ex_container,
             text=entry.example,
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_CODE, size=12),
-            text_color="#A5F3FC",
+            text_color=("#0369A1", "#A5F3FC"),
             anchor="w",
             justify="left"
         )

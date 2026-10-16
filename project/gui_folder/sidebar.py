@@ -29,6 +29,7 @@ class Sidebar(ctk.CTkFrame):
         on_load_sample: Optional[Callable[[str], None]] = None,
         on_clear_terminal: Optional[Callable[[], None]] = None,
         on_zoom_change: Optional[Callable[[int], None]] = None,
+        on_theme_change: Optional[Callable[[str], None]] = None,
         **kwargs
     ):
         super().__init__(parent, fg_color=Theme.BG_SIDEBAR, width=240, corner_radius=0, **kwargs)
@@ -40,6 +41,7 @@ class Sidebar(ctk.CTkFrame):
         self.on_load_sample = on_load_sample
         self.on_clear_terminal = on_clear_terminal
         self.on_zoom_change = on_zoom_change
+        self.on_theme_change = on_theme_change
         self._current_font_size = 13
 
         self._build_branding()
@@ -60,7 +62,7 @@ class Sidebar(ctk.CTkFrame):
             logo_row,
             text="🇵🇭 Peenoise",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=20, weight="bold"),
-            text_color="#38BDF8"
+            text_color=Theme.INFO_CYAN
         )
         title_lbl.pack(side="left")
 
@@ -68,8 +70,8 @@ class Sidebar(ctk.CTkFrame):
             logo_row,
             text="v1.0",
             font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=10, weight="bold"),
-            fg_color="#1E293B",
-            text_color="#94A3B8",
+            fg_color=("#E2E8F0", "#1E293B"),
+            text_color=("#475569", "#94A3B8"),
             corner_radius=6,
             padx=6,
             pady=1
@@ -164,7 +166,7 @@ class Sidebar(ctk.CTkFrame):
             dropdown_font=ctk.CTkFont(family=Theme.FONT_FAMILY_UI, size=11),
             fg_color=Theme.BG_CARD,
             button_color=Theme.BG_CARD_HOVER,
-            button_hover_color="#374151",
+            button_hover_color=Theme.BORDER_COLOR,
             text_color=Theme.TEXT_PRIMARY,
             height=34,
             corner_radius=6,
@@ -302,7 +304,7 @@ class Sidebar(ctk.CTkFrame):
                 row,
                 text=key,
                 font=ctk.CTkFont(family=Theme.FONT_FAMILY_CODE, size=10, weight="bold"),
-                text_color="#38BDF8"
+                text_color=Theme.INFO_CYAN
             )
             k_lbl.pack(side="left")
 
@@ -349,8 +351,11 @@ class Sidebar(ctk.CTkFrame):
 
     def _change_theme(self, selection: str):
         if "Madilim" in selection:
-            ctk.set_appearance_mode("dark")
+            mode = "dark"
         elif "Maliwanag" in selection:
-            ctk.set_appearance_mode("light")
+            mode = "light"
         else:
-            ctk.set_appearance_mode("system")
+            mode = "system"
+        ctk.set_appearance_mode(mode)
+        if self.on_theme_change:
+            self.on_theme_change(mode)
