@@ -1,4 +1,5 @@
 class SourcePosition:
+    """Tracks line and column position within the source code."""
     def __init__(self, line: int, column: int):
         self.__line = line
         self.__column = column

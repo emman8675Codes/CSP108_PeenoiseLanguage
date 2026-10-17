@@ -5,6 +5,10 @@ from lexer_folder.token import Token
 
 
 class Lexer:
+    """
+    Lexer for Peenoise Language.
+    Scans raw source code and converts it into a list of Token objects.
+    """
     def __init__(self, source_code):
         self.__source = source_code
         self.__length = len(source_code)

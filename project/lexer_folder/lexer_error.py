@@ -1,6 +1,8 @@
 from lexer_folder.source_position import SourcePosition
 
+
 class LexerError(Exception):
+    """Represents an error encountered during lexical scanning (tokenization)."""
     def __init__(self, message: str, position: SourcePosition):
         self.__position = position
         self.__message = message

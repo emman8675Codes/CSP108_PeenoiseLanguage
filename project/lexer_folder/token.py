@@ -1,7 +1,9 @@
 from lexer_folder.token_type import TokenType
 from lexer_folder.source_position import SourcePosition
 
+
 class Token:
+    """Represents a single lexical token with type, lexeme, literal value, and position."""
     def __init__(self, token_type: TokenType, lexeme: str, literal, position: SourcePosition):
         self.__token_type = token_type
         self.__lexeme = lexeme
